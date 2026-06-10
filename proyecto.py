@@ -28,3 +28,5 @@ with open ('precios_surtidor_2024_2025_2026.csv', mode='r', encoding='utf-8') as
             cant_nafta_gasoilG3 +=1
 st.button("Hola")       
 st.bar_chart({"data": [cant_nafta_super, cant_nafta_premium, cant_nafta_GNC, cant_nafta_gasoilG2, cant_nafta_gasoilG3]})
+
+#python -m streamlit run proyecto.py (hostear proyecto)
