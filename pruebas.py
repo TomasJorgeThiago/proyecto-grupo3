@@ -9,15 +9,23 @@ def lectura_completa(columna, formato):
 
 #lectura_completa()
 
-def gnc():
-    gncid=lectura_completa('idproducto',int)
-    gncprecio=lectura_completa('precio',float)
+def promedio_precio(num):
+    id_nafta=lectura_completa('idproducto',int)
+    precio_nafta=lectura_completa('precio',float)
     total=0
     aparicion=0
-    for x in range(0,len(gncid)):
-        if gncid[x]==6:
-            total+=gncprecio[x]
+    for x in range(0,len(id_nafta)):
+        if id_nafta[x]==num:
+            total+=precio_nafta[x]
             aparicion+=1
     print (total/aparicion)
     return total/aparicion
-gnc()
+#promedio_precio()
+
+def main():
+    promedio_precio(2)
+    promedio_precio(3)
+    promedio_precio(6)
+    promedio_precio(19)
+    promedio_precio(21)
+main()    
