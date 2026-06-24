@@ -8,7 +8,8 @@ def todos_datos():
         "precio": [],
         "idempresabandera": [],
         "latitud": [],
-        "longitud": []
+        "longitud": [],
+        "empresabandera": []
     }
     with open("precios_surtidor_2024_2025_2026.csv", mode="r",encoding="utf-8") as archivo:
         lectura = csv.DictReader(archivo)
@@ -19,9 +20,11 @@ def todos_datos():
             datos["idproducto"].append(row["idproducto"])
             datos["precio"].append(row["precio"])
             datos["idempresabandera"].append(row["idempresabandera"])
+            datos["empresabandera"].append(row["empresabandera"])
             datos["latitud"].append(float(row["latitud"]))
             datos["longitud"].append(float(row["longitud"]))
     return datos
+
 
 def grafico_cantcombustibles(datos):
     cant_nafta_super= 0
@@ -45,17 +48,48 @@ def grafico_cantcombustibles(datos):
                "GNC": cant_nafta_GNC, 
                "Gasoil G2": cant_nafta_gasoilG2, 
                "Gasoil G3": cant_nafta_gasoilG3}
-    st.bar_chart(combustible)
+    st.bar_chart(combustible, sort="value")
+
 
 def seleccionador_provincia(datos):
+
+    provincias = ["TODO"] + sorted(set(datos["provincia"]))
     seleccionador = st.selectbox(
-        "Selecciona una Provincia", (datos["provincia"])
+        "Selecciona una Provincia", provincias)
+    return seleccionador
+
+def seleccionador_empresa(datos):
+    lista = ["TODAS"] + sorted(set(datos["empresabandera"]))
+    empresa = st.sidebar.selectbox(
+        "¿En qué empresa está interesado?",
+        lista
     )
+    return empresa
+
+def mapa(datos):
+    provincia = seleccionador_provincia(datos)
+    empresa = seleccionador_empresa(datos)
+    longitudes = []
+    latitudes = []
+    for x in range(len(datos["provincia"])):
+        if datos["provincia"][x] == provincia or provincia == "TODO":
+            if empresa == datos["empresabandera"][x] or empresa == "TODAS":
+                longitudes.append(datos["longitud"][x])
+                latitudes.append(datos["latitud"][x])
+
+    if len(latitudes) == 0:
+        st.warning("No hay estaciones para mostrar.")
+    else:
+        datos_mapa = {
+        "lat": latitudes,
+        "lon": longitudes,
+        "zoom": 13
+    }
+        st.map(datos_mapa)
 
 def main():
     datos = todos_datos()
     grafico_cantcombustibles(datos)
-    #print (datos["precio"])
-    seleccionador_provincia(datos)
+    mapa(datos)
 main()
 

@@ -49,44 +49,28 @@ def todos_datos():
             
     return datos
 
-def grafico_cantcombustibles(datos):
-    #Cantidad de nafta:
-    #cant_nafta_"tipo de nafta": Lo usamos para contabilizar cada tipo de nafta que hay en argentina,
-    #utilizamos un contador, por iteracion va sumando 1 al tipo de nafta, por el 'idproducto' correspondiente.
-    #Nafta Super = idproducto 2
-    #Nafta Premium = idproducto 3
-    #Nafta GNC = idproducto 6
-    #Nafta Gasoil Grado 2 = idproducto 19
-    #Nafta Gasoil Grado 2 = idproducto 21
-    #st.bar_chart: Grafico Ordenado (por cantidad o value) que muestra la cantidad de Tipo de combustible que hay en todo el pais, toma
-    #combustible y toma el sort=value que sirve para ordenar la columna de "Valores" de la propia funcion st.bar
-    cant_nafta_super= 0
-    cant_nafta_premium= 0
-    cant_nafta_GNC= 0 
-    cant_nafta_gasoilG2= 0
-    cant_nafta_gasoilG3= 0
+def contar_combustible(datos, id_combustible):
+    cantidad = 0
     for producto in datos["idproducto"]:
-        if producto == "2":
-            cant_nafta_super += 1
-        elif producto == "3":
-            cant_nafta_premium += 1
-        elif producto == "6":
-            cant_nafta_GNC += 1
-        elif producto == "19":
-            cant_nafta_gasoilG2 += 1
-        elif producto == "21":
-            cant_nafta_gasoilG3 += 1   
-    combustible = {"Nafta Super": cant_nafta_super, 
-               "Nafta Premium": cant_nafta_premium, 
-               "GNC": cant_nafta_GNC, 
-               "Gasoil G2": cant_nafta_gasoilG2, 
-               "Gasoil G3": cant_nafta_gasoilG3}
+        if producto == id_combustible:
+            cantidad += 1
+    return cantidad
+
+def grafico_cantcombustibles(datos):
+    combustible = {
+        "Nafta Super": contar_combustible(datos, "2"),
+        "Nafta Premium": contar_combustible(datos, "3"),
+        "GNC": contar_combustible(datos, "6"),
+        "Gasoil G2": contar_combustible(datos, "19"),
+        "Gasoil G3": contar_combustible(datos, "21")
+    }
+    st.write(":bar_chart: Cantidad de combustible por tipo en todo el país :bar_chart:")
     st.bar_chart(combustible,sort= "value")
 
 
 def seleccionador_provincia(datos):
     provincias = ["TODO"] + sorted(set(datos["provincia"]))
-    seleccionador = st.selectbox(
+    seleccionador = st.sidebar.selectbox(
         "Selecciona una Provincia", provincias)
     return seleccionador
 
@@ -142,12 +126,11 @@ def mostrar_promedios(datos, provincia):
 def main():
     #llamamos a la funcion datos y a todos los graficos o mapas
     datos = todos_datos()
-    grafico_cantcombustibles(datos)
     provincia = seleccionador_provincia(datos)
     empresa = seleccionador_empresa(datos)
-    #print (datos["precio"])
     mapa_interactivo(datos, provincia,empresa)
     mostrar_promedios(datos,provincia)
+    grafico_cantcombustibles(datos)
 main()
 
 #python -m streamlit run proyecto.py (hostear proyecto)
