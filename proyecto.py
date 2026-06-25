@@ -117,11 +117,10 @@ def promedio_combustible(datos, provincia, id_combustible):
 
 def mostrar_promedios(datos, provincia):
     st.write("Promedios en", provincia)
-    st.write("Nafta Super:",round(promedio_combustible(datos, provincia, "2"), 2))
-    st.write("Nafta Premium:",round(promedio_combustible(datos, provincia, "3"), 2))
-    st.write("GNC:",round(promedio_combustible(datos, provincia, "6"), 2))
-    st.write("Gasoil G2:",round(promedio_combustible(datos, provincia, "19"), 2))
-    st.write("Gasoil G3:",round(promedio_combustible(datos, provincia, "21"), 2))     
+    comb_nombre = [("2", "Nafta Super"), ("3", "Nafta Premium"), ("6", "GNC"), ("19", "Gasoil G2"), ("21", "Gasoil G3")]
+    for id_combustible, nombre in comb_nombre:
+        promedio = promedio_combustible(datos, provincia, id_combustible)
+        st.write(nombre,"$", round(promedio, 2))
     return provincia
 
 
