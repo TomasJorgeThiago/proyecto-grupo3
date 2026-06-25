@@ -18,6 +18,7 @@ import matplotlib.pyplot as plt
 #como un error del dataset y esperamos instrucciones de como seguir.
 
 #-----------------------------------------
+col1,col2 = st.columns(2, width=1200)
 def todos_datos():
     #datos = diccionario con listas vacias de todas las columnas "importantes" que vamos a utilizar dentro de todo el programa, cada vez que
     #necesitemos llamar a los datos del archivo, llamaremos directamente a "datos" sin abrir de vuelta el csv. por ejemplo:
@@ -123,14 +124,17 @@ def mostrar_promedios(datos, provincia):
     st.write("Gasoil G3:",round(promedio_combustible(datos, provincia, "21"), 2))     
     return provincia
 
+
 def main():
     #llamamos a la funcion datos y a todos los graficos o mapas
     datos = todos_datos()
     provincia = seleccionador_provincia(datos)
     empresa = seleccionador_empresa(datos)
-    mapa_interactivo(datos, provincia,empresa)
-    mostrar_promedios(datos,provincia)
-    grafico_cantcombustibles(datos)
+    with col1:
+        mapa_interactivo(datos, provincia,empresa)
+        mostrar_promedios(datos,provincia)
+    with col2:
+        grafico_cantcombustibles(datos)
 main()
 
 #python -m streamlit run proyecto.py (hostear proyecto)
