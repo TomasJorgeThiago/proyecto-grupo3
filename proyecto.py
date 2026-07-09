@@ -2,23 +2,7 @@ import streamlit as st
 import csv
 import matplotlib.pyplot as plt
 
-#Cambios y Correcciones:
-
-# 1- Hicimos la funcion principal de lectura , para que solo se lea una vez, esta consta de un diccionario con listas vacias, que luego dentro
-# del for, se ira rellenando con su respectiva columna, por cada iteracion. El if utilizado lo pusimos porque nos dimos cuenta que hay un par de
-# coordenadas que estan vacias, entonces simplemente las salteamos, no hay errores ya que es la latitud y la longitud de 2 estaciones.
-# 2- Ordenamos el grafico de combustibles: Nos pedian que ordenemos de menor a mayor los valores del grafico, utilizamos simplemente uno de los
-# parametros de la funcion st.bar, "sort" que permite Ordenar por valor. Reeutilizamos la funcion principal del grafico.
-#PREGUNTA DINAMICA: ¿Cuántas estaciones se encuentran disponibles según la provincia?
-
-# 3- Agregar mapa interactivo + Seleccionador: Agregamos un mapa interactivo que nos muestra todas las estaciones de servicio en la provincia que
-# seleccionamos. El Seleccionador esta ordenado alfabeticamente con el parametro "sorted". Utilizamos un set, para que las provincias no se repitan.
-
-#para tomar nota: Hay un par de provincias, como por ejemplo "Buenos Aires" que tienen algunas sus latitudes y longitudes en otro lugar del pais. Tomamos esto
-#como un error del dataset y esperamos instrucciones de como seguir.
-
-#-----------------------------------------
-
+#ordenamos la pagina en 2 columnas
 col1, col2 = st.columns(2, width=1000)
 def todos_datos():
     #datos = diccionario con listas vacias de todas las columnas "importantes" que vamos a utilizar dentro de todo el programa, cada vez que
@@ -27,6 +11,8 @@ def todos_datos():
     #lectura= lo usamos para leer el csv, utilizamos el modulo: csv, utilizamos DictReader para poder leer el archivo usando los nombres
     #de las columnas
     #for row in lectura: recorre todas las filas del csv, por cada iteracion se guarda una fila distinta en cada columna o row
+    #También verificamos que la latitud y longitud no estén vacías, ya que algunas estaciones no tienen coordenadas y no podrían
+    #mostrarse correctamente en el mapa.
     datos = {
         "provincia": [],
         "idproducto": [],
@@ -53,41 +39,10 @@ def todos_datos():
             
     return datos
 
-#def grafico_cantcombustibles(datos):
-    #Cantidad de nafta:
-    #cant_nafta_"tipo de nafta": Lo usamos para contabilizar cada tipo de nafta que hay en argentina,
-    #utilizamos un contador, por iteracion va sumando 1 al tipo de nafta, por el 'idproducto' correspondiente.
-    #Nafta Super = idproducto 2
-    #Nafta Premium = idproducto 3
-    #Nafta GNC = idproducto 6
-    #Nafta Gasoil Grado 2 = idproducto 19
-    #Nafta Gasoil Grado 2 = idproducto 21
-    #st.bar_chart: Grafico Ordenado (por cantidad o value) que muestra la cantidad de Tipo de combustible que hay en todo el pais, toma
-    #combustible y toma el sort=value que sirve para ordenar la columna de "Valores" de la propia funcion st.bar
-    cant_nafta_super= 0
-    cant_nafta_premium= 0
-    cant_nafta_GNC= 0 
-    cant_nafta_gasoilG2= 0
-    cant_nafta_gasoilG3= 0
-    for producto in datos["idproducto"]:
-        if producto == "2":
-            cant_nafta_super += 1
-        elif producto == "3":
-            cant_nafta_premium += 1
-        elif producto == "6":
-            cant_nafta_GNC += 1
-        elif producto == "19":
-            cant_nafta_gasoilG2 += 1
-        elif producto == "21":
-            cant_nafta_gasoilG3 += 1   
-    combustible = {"Nafta Super": cant_nafta_super, 
-               "Nafta Premium": cant_nafta_premium, 
-               "GNC": cant_nafta_GNC, 
-               "Gasoil G2": cant_nafta_gasoilG2, 
-               "Gasoil G3": cant_nafta_gasoilG3}
-    st.bar_chart(combustible,sort= "value")
-
 def contar_combustible(datos, id_combustible):
+    #Cuenta la cantidad de tipo de combustible que hay en el pais
+    #Recibe id_combustible y cuando encuentra una coincidencia, suma 1 al contador
+    #devuelve la cantidad total
     cantidad = 0
     for producto in datos["idproducto"]:
         if producto == id_combustible:
@@ -95,6 +50,10 @@ def contar_combustible(datos, id_combustible):
     return cantidad
 
 def grafico_cantcombustibles(datos):
+    #Tomando contar_combustible(), genera un grafico que muestra la cantidad de
+    #tipos de combustible que hay en el pais
+    #Guarda los resultados en un diccionario donde la clave es el nombre
+    #del combustible y el valor es la cantidad de ese tipo de combustible.
     combustible = {
         "Nafta Super": contar_combustible(datos, "2"),
         "Nafta Premium": contar_combustible(datos, "3"),
@@ -105,36 +64,32 @@ def grafico_cantcombustibles(datos):
     st.write(":bar_chart: Cantidad de combustible en todo el país :bar_chart:")
     st.bar_chart(combustible,sort= "value")
 
-#def mapa_interactivo (datos):
-    #funcion para el mapa interactivo
-    #seleccionador: utilizamos la funcion st.selectbox, para seleccionar la provincia a "mostrar", esta se guardara en la variable y luego
-    #la utilizaremos dentro del for para tomar la longitud y la latitud de cada estacion de servicio dentro de la provincia
-    #longitudes y latitudes son listas vacias que luego rellenaremos dentro del for
-#    seleccionador = st.selectbox("Selecciona una Provincia", sorted(set(datos["provincia"])))
-#    longitudes = []
-#    latitudes = []
-#    for x in range (len(datos["provincia"])):
-#        if datos["provincia"][x] == seleccionador:
-#            longitudes.append (datos["longitud"][x])
-#            latitudes.append (datos["latitud"][x])
-
-#    datos_mapa = {"lat": latitudes , "lon": longitudes}
-#    st.map(datos_mapa)
-    
 def seleccionador_provincia(datos):
+    #Esto es parte de todo el mapa, sirve para seleccionar en que provincia queremos visualizar
+    #las empresas, el combustible, y el promedio de precios por tipo de combustible
+    #Utiliza set() para eliminar provincias repetidas y sorted()para ordenarlas alfabéticamente.
     provincias = ["TODO"] + sorted(set(datos["provincia"]))
     seleccionador = st.sidebar.selectbox(
         "Selecciona una Provincia", provincias)
     return seleccionador
 
 def seleccionador_empresa(datos):
+    #Esto es parte de todo el mapa, sirve para seleccionar que empresa queremos buscar, se puede
+    #acompañar seleccionando una provincia para tener datos mas exactos
+    #utilizando set() y las ordena alfabéticamente.
+    #la opcion "TODAS" permite no aplicar ningún filtro por empresa en el mapa
     lista = ["TODAS"] + sorted(set(datos["empresabandera"]))
     empresa = st.sidebar.selectbox(
         "¿En qué empresa está interesado?",
-        lista)
+        lista
+    )
     return empresa
 
 def seleccionador_combustible(datos):
+    #Esto es parte de todo el mapa, sirve para seleccionar que tipo de combustibles queremos buscar
+    #se puede acompañar por la provincia y por la empresa para tener datos mas exactos
+    #La opción "TODO" permite mostrar estaciones sin filtrar
+    #por combustible.
     lista = ["TODO"] + sorted(set(datos["producto"]))
     combustible = st.sidebar.selectbox(
         "Elegir combustible",
@@ -143,6 +98,12 @@ def seleccionador_combustible(datos):
     return combustible
 
 def mapa_interactivo(datos,provincia, empresa, combustible):
+    #Este es el mapa principal.
+    #Permite filtrar por provincia, empresa y tipo de combustible(Gracias a los seleccionadores)
+    #Recorre todas las estaciones del archivo y compara los datos con los filtros seleccionados por el usuario:
+    #provincia, empresa y combustible.
+    #el st.warning nos indica que si no encuentra estaciones que coincidan con los filtros,muestra un mensaje de advertencia.
+    #st.map() para representar todas las estaciones seleccionadas en el mapa.
     longitudes = []
     latitudes = []
     for x in range(len(datos["provincia"])):
@@ -164,6 +125,11 @@ def mapa_interactivo(datos,provincia, empresa, combustible):
         
         
 def promedio_combustible(datos, provincia, id_combustible):
+    #Calcula el promedio del precio de un tipo de combustible
+    #Recibe una provincia y un id de combustible.
+    #Recorre todas las estaciones y suma los precios solamente cuando coinciden con la provincia y el combustible seleccionado.
+    #cuenta la cantidad de estaciones encontradas para poder realizar el promedio.
+    #Si encuentra estaciones devuelve el promedio del precio. En caso contrario devuelve 0 para evitar errores.
     total = 0
     cantidad = 0
     for x in range(len(datos["provincia"])):
@@ -176,21 +142,55 @@ def promedio_combustible(datos, provincia, id_combustible):
     return 0
 
 def mostrar_promedios(datos, provincia):
+    #Muestra el promedio de cada tipo de combustible
+    #Utiliza promedio_combustible, por cada tipo de combustible a consultar
     st.write("### Promedios en", provincia)
     comb_nombre = [("2", "Nafta Super"), ("3", "Nafta Premium"), ("6", "GNC"), ("19", "Gasoil G2"), ("21", "Gasoil G3")]
     for id_combustible, nombre in comb_nombre:
         promedio = promedio_combustible(datos, provincia, id_combustible)
-        st.write(nombre, "$", round(promedio, 2))
+        st.write(nombre,"$", round(promedio, 2))
     
 
+def grafico_gnc_barato(datos):
+    #Este grafico muestra las empresas con combustible GNC, mas barato
+    #suma_empresa: almacena la suma de todos los precios de GNC de cada empresa.
+    #cantidad_empresa: almacena la cantidad de estaciones de GNC que tiene cada empresa.
+    #Recorre todas las estaciones y solamente toma aquellas cuales idproducto corresponde al GNC.
+    #calcula el promedio dividiendo la suma de preciosentre la cantidad de estaciones.
+    #Color amarillo para diferenciar del fondo y del grafico de arriba
+    suma_empresa = {}
+    cantidad_empresa = {}
+
+    for x in range(len(datos["idproducto"])):
+        if datos["idproducto"][x] == "6":
+            empresa = datos["empresabandera"][x]
+
+            if empresa not in suma_empresa:
+                suma_empresa[empresa] = 0
+                cantidad_empresa[empresa] = 0
+
+            suma_empresa[empresa] += float(datos["precio"][x])
+            cantidad_empresa[empresa] += 1
+
+    promedio_empresa = {}
+
+    for empresa in suma_empresa:
+        promedio_empresa[empresa] = round(suma_empresa[empresa] / cantidad_empresa[empresa], 2)
+
+    st.write("Promedio del precio del GNC por empresa")
+    st.bar_chart(promedio_empresa, sort="value", color="yellow")
+    
 def main():
-    #llamamos a la funcion datos y a todos los graficos o mapas
+    #Función principal del programa
+    #Obtiene los datos del archivo
+    #Llama a todos los seleccionadores, mapas, interfaces
     datos = todos_datos()
     provincia = seleccionador_provincia(datos)
     empresa = seleccionador_empresa(datos)
     combustible = seleccionador_combustible(datos)
     with col2:
         grafico_cantcombustibles(datos)
+        grafico_gnc_barato(datos)
     with col1:
         mapa_interactivo(datos, provincia,empresa,combustible)
         mostrar_promedios(datos,provincia)
